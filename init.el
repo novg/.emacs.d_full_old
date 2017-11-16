@@ -46,18 +46,18 @@
 ;; Hour format
 (setq display-time-24hr-format t)
 ;; (setq display-time-day-and-date nil)
-(display-time)
-(setq calendar-date-display-form (quote ((format "%04s-%02d-%02d" year (string-to-int month) (string-to-int day)))))
-(setq calendar-time-display-form (quote (24-hours ":" minutes (if time-zone " (") time-zone (if time-zone ")"))))
-(setq calendar-week-start-day t)
-(setq european-calendar-style t)
+(display-time-mode t)
+;; (setq calendar-date-display-form (quote ((format "%04s-%02d-%02d" year (string-to-int month) (string-to-int day)))))
+;; (setq calendar-time-display-form (quote (24-hours ":" minutes (if time-zone " (") time-zone (if time-zone ")"))))
+;; (setq calendar-week-start-day t)
+;; (setq european-calendar-style t)
 
 ;; Linum plugin
 (require 'linum)
 (line-number-mode   t) ;; show number of string in mode-line
 (global-linum-mode  t) ;; show nubers of strings at all buffers
 (column-number-mode t) ;; show number of column at mode-line
-(setq linum-format "  %d") ;; format of number strings
+(setq linum-format " %d") ;; format of number strings
 
 ;; Fringe setting
 (fringe-mode '(8 . 0)) ;;  make the left fringe 8 pixels wide and the right disappear
@@ -76,6 +76,10 @@
 ;; Show-paren-mode settings
 (show-paren-mode t) ;; enable highlight expressions between {},[],()
 (setq show-paren-style 'expression) ;; enable color higlight expression between {},[],()
+
+;; Electric-modes settings
+(electric-pair-mode    1) ;; автозакрытие {},[],() с переводом курсора внутрь скобок
+(electric-indent-mode -1) ;; отключить индентацию  electric-indent-mod'ом (default in Emacs-24.4)
 
 ;; Disable backup/autosave files
 (setq make-backup-files nil)
@@ -184,6 +188,13 @@
 ;; Highlight current line
 (global-hl-line-mode t)
 
+;;
+(defun create-new-line-with-indent ()
+    "Create new line with indent from middle line."
+    (interactive)
+    (end-of-line 1)
+    (newline-and-indent))
+(global-set-key (kbd "<C-return>") 'create-new-line-with-indent)
 ;;
 ;;
 ;;
