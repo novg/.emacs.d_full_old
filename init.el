@@ -1,62 +1,184 @@
+;; https://lupan.pl/emacs.html
+(require 'cl)
+
+;; Directory with local Emacs lisp files
+(let ((path (expand-file-name "~/.emacs.d/lisp")))
+  (if (file-accessible-directory-p path)
+      (add-to-list 'load-path path)))
+
+;; (require 'init-cl)
+
 ;; M-x eval-buffer
 ;; M-x package-refresh-contents
 ;; M-x package-install RET package-name RET
 
+;; Add MELPA package list
 (require 'package)
-(add-to-list 'package-archives
-	     '("melpa" . "http://melpa.milkbox.net/packages/") t)
+(setq package-archives
+      '(("gnu" . "https://elpa.gnu.org/packages/")
+	("melpa-stb" . "https://stable.melpa.org/packages/")
+	("melpa" . "https://melpa.org/packages/"))
+      tls-checktrust t
+      tls-program '("gnutls-cli --x509cafile %t -p %p %h")
+      gnutls-verify-error t)
 
 (package-initialize)
-(when (not package-archive-contents)
-  (package-refresh-contents))
 
-;; Set font
-;; (set-face-attribute 'default nil :font "Anonimous Pro Minus-13")
+(require 'use-package) ;; requires installing package "use-package"
 
-;; Start window size
-(when (window-system)
-   (set-frame-size (selected-frame) 150 50))
-;; Set top left corner of frame
-(set-frame-position (selected-frame) 80 50)
+;;
+;; BUFFER, FILE AND WINDOW SELECTION ENHANCEMENTS
+;;
 
-;; Disable GUI components
-(tooltip-mode      -1)
-(menu-bar-mode     -1) ;; disable gui menu
-(tool-bar-mode     -1) ;; disable tool-bar
-(scroll-bar-mode   -1) ;; disable scroll-bar
-(blink-cursor-mode -1) ;; disable blink cursor
-(setq use-dialog-box nil) ;; disable gui dialog window
-(setq redisplay-dont-pause t) ;; advanced displaing of buffer
+;; Use more efficient buffer/file selection
+(use-package helm
+  :ensure nil
+  :init
+  (setq help-split-window-default-side 'other)
+  (helm-mode 1)
+  :bind
+  (("M-x" . helm-M-x)
+   ("M-y" . helm-show-kill-ring)
+   ("C-x C-f" . helm-find-files)
+   ("C-c o" . helm-occur)
+   ("C-x b" . helm-mini)
+   ("C-h a" . helm-apropos)
+   ("C-h d" . helm-info-at-point)
+   ("C-c L" . helm-locate)
+   ("C-c r" . helm-resume)
+   ("C-c i" . helm-imenu)))
+
+(use-package helm-swoop
+  :ensure nil
+  :bind
+  (("C-s" . helm-swoop)))
+
+(use-package helm-descbinds
+  :ensure nil
+  :init
+  (helm-descbinds-mode))
+
+(use-package helm-git-grep
+  :ensure nil
+  :bind
+  (("C-c j" . helm-git-grep)
+   ("C-c J" . helm-git-grep-at-painf)))
+
+(use-package helm-ls-git
+  :ensure nil
+  :bind
+  (("C-c g" . helm-ls-git-ls)))
+
+(use-package helm-c-yasnippet
+  :ensure nil
+  :bind
+  (("C-c y" . helm-yas-complete)))
+
+;; Use more efficient changing windows
+(use-package ace-window
+  :ensure nil
+  :bind
+  (("C-x o" . ace-window)))
+
+;; TODO Check the functional and keybindings
+(use-package windmove
+  :ensure nil
+  :demand
+  :bind
+  (("C-s-n" . windmove-down)
+   ("C-s-p" . windmove-up)
+   ("C-s-b" . windmove-left)
+   ("C-s-f" . windmove-right))
+  :config
+  (windmove-default-keybindings))
+
+;; A like tabs
+(use-package helm-spaces
+  :ensure nil
+  :bind
+  (("C-c b" . helm-spaces)))
+
+;; Allow for undo/redo of window manipulations (sush as C-x 1)
+(winner-mode 1) ;; C-c left/C-c right
+
+;; Remind of keys than can follow a key sequence
+(use-package which-key
+  :ensure nil
+  :config
+  (which-key-mode 1))
+
+(use-package avy
+  :ensure nil
+  :bind
+  (("C-:" . avy-goto-char-timer)))
+
+(use-package treemacs
+  :ensure nil
+  :bind
+  (("C-c t" . treemacs-toggle)))
+
+;;
+;; EDITING ENHANCEMENTS
+;;
+
+;; Context aware insertion of pairs parenthesis
+(use-package smartparens
+  :ensure nil
+  :diminish smartparens-mode
+  :commands
+  smartparens-strict-mode
+  smartparens-mode
+  sp-restrict-to-pairs-interactive
+  sp-local-pair
+  :init
+  (setq sp-interactive-dwim t)
+  :config
+  (require 'smartparens-config)
+  (sp-use-smartparens-bindings)
+
+  (sp-pair "(" ")" :wrap "C-(")   ;; how do people live without this?
+  (sp-pair "[" "]" :wrap "C-c [") ;; C-[ sends ESC
+  (sp-pair "{" "}" :wrap "C-{")
+
+  ;; WORKAROUND https://github.com/Fuco1/smartparens/issues/543
+  (bind-key "C-<left>" nil smartparens-mode-map)
+  (bind-key "C-<right>" nil smartparens-mode-map)
+
+  (bind-key "S-<delete>" 'sp-kill-sexp smartparens-mode-map)
+  (bind-key "S-<backspace>" 'sp-backward-kill-sexp smartparens-mode-map))
+
+
+;; Edit with multiple cursors
+(use-package multiple-cursors
+  :ensure nil
+  :bind
+  (("C-c n" . mc/mark-next-like-this)
+   ("C-c p" . mc/mark-previous-like-this)))
+
+;;
+;; APPEARANCE
+;;
+
+(setq inhibit-startup-screen t
+      ediff-window-setup-function #'ediff-setup-windows-plain)
+(set-scroll-bar-mode 'right)
+(menu-bar-mode 0)
+(tool-bar-mode 0)
+(tooltip-mode  0)
+;; (scroll-bar-mode   0)          ;; disable scroll-bar
+;; (blink-cursor-mode 0)          ;; disable blink cursor
+(setq use-dialog-box nil)         ;; disable gui dialog window
+(setq redisplay-dont-pause t)     ;; advanced displaing of buffer
 (setq ring-bell-function 'ignore) ;; disable bell
-(global-set-key (kbd "<f12>") 'menu-bar-mode) ;; show menu on press F12
-
-;; Inhibit startup/splash screen
-(setq inhibit-splash-screen   t)
-(setq inhibit-startup-message t) ;; show greeting screen C-h C-a
 
 ;; Display the name of the current buffer in the title bar
 (setq frame-title-format "GNU Emacs: %b")
 
-;;
-(delete-selection-mode t)
-
-;; Size of file per percent (%)
-(size-indication-mode t)
-
-;; Hour format
-(setq display-time-24hr-format t)
-;; (setq display-time-day-and-date nil)
-(display-time-mode t)
-;; (setq calendar-date-display-form (quote ((format "%04s-%02d-%02d" year (string-to-int month) (string-to-int day)))))
-;; (setq calendar-time-display-form (quote (24-hours ":" minutes (if time-zone " (") time-zone (if time-zone ")"))))
-;; (setq calendar-week-start-day t)
-;; (setq european-calendar-style t)
-
 ;; Linum plugin
 (require 'linum)
-(line-number-mode   t) ;; show number of string in mode-line
-(global-linum-mode  t) ;; show nubers of strings at all buffers
-(column-number-mode t) ;; show number of column at mode-line
+(line-number-mode   t)    ;; show number of string in mode-line
+(global-linum-mode  t)    ;; show nubers of strings at all buffers
+(column-number-mode t)    ;; show number of column at mode-line
 (setq linum-format " %d") ;; format of number strings
 
 ;; Fringe setting
@@ -64,226 +186,232 @@
 (setq-default indicate-empty-lines t)
 (setq-default indicate-buffer-boundaries 'left)
 
-;; Syntax highlighting
-(require 'font-lock)
-(setq font-lock-maximum-decoration t)
-
 ;; Scrolling setting
 (setq scroll-step               1)
-(setq scroll-margin            10)
+(setq scroll-margin             5)
 (setq scroll-conservatively 10000)
 
 ;; Show-paren-mode settings
-(show-paren-mode t) ;; enable highlight expressions between {},[],()
-(setq show-paren-style 'expression) ;; enable color higlight expression between {},[],()
-
-;; Electric-modes settings
-(electric-pair-mode    1) ;; автозакрытие {},[],() с переводом курсора внутрь скобок
-(electric-indent-mode -1) ;; отключить индентацию  electric-indent-mod'ом (default in Emacs-24.4)
-
-;; Disable backup/autosave files
-(setq make-backup-files nil)
-(setq auto-save-default nil)
-;; (setq auto-save-list-file-name nil)
-
-;; Indent setting
-(setq-default indent-tabs-mode nil) ;; disable TAB indent
-(setq-default tab-width          4) ;; widht of tabulation - 4 space symbols
-(setq-default c-basic-offset     4)
-(setq-default standart-indent    4)
-(setq-default lisp-body-indent   4)
-(global-set-key (kbd "RET") 'newline-and-indent)
-(setq lisp-indent-function 'common-lisp-indent-function)
+;;(show-paren-mode t) ;; enable highlight expressions between {},[],()
+;;(setq show-paren-style 'expression) ;; enable color higlight expression between {},[],()
 
 ;; Show messages
 (defalias 'yes-or-no-p 'y-or-n-p)
 
-;; Clipboard settings
-;; (setq x-select-enable-clipboard t)
+;; Highlight current line
+(global-hl-line-mode t)
 
-;; End of file newlines
-(setq require-final-newline    t)
-(setq next-line-add-newlines nil)
 
-;; Easy transition between buffers: M-arrow-keys
-(if (equal nil (equal major-mode 'org-mode))
-    (windmove-default-keybindings 'meta))
+(defun set-frame-font-inconsolata (size &optional frames)
+  "Set font to Inconsolata:pixelsize=SIZE:antialias=true:autohint=false.
+Argument FRAMES has the same meaning as for `set-frame-font'"
+  (interactive "n[Inconsolata] size: ")
+  (set-frame-font (format "Inconsolata:pixelsize=%d:antialias=true:autohint=true" size) nil frames))
 
-;; IDO plugin
-(require 'ido)
-(ido-mode                      t)
-(icomplete-mode                t)
-(ido-everywhere                t)
-(setq ido-virtual-buffers      t)
-(setq ido-enable-flex-matching t)
+(defun set-frame-font-anonymous-pro (size &optional frames)
+  "Set font to Anonymous Pro:pixelsize=SIZE:antialias=true:autohint=false.
+Argument FRAMES has the same meaning as for `set-frame-font'"
+  (interactive "n[Anonymous Pro] size: ")
+  (set-frame-font (format "Anonymous Pro:pixelsize=%d:antialias:true:autohint=true" size) nil frames))
 
-;; C-w dalete previous word or region
-(defun backward-kill-word-or-kill-region (arg)
-    (interactive "p")
-    (if (region-active-p)
-        (kill-region (region-beginning)
-                     (region-end))
-        (backward-kill-word arg)))
-(global-set-key (kbd "C-w") 'backward-kill-word-or-kill-region)
-(define-key minibuffer-local-map (kbd "C-w") 'backward-kill-word-or-kill-region)
-(add-hook 'ido-setup-hook
-          (lambda ()
-              (define-key ido-completion-map (kbd "C-w") 'ido-delete-backward-word-updir)))
+(use-package powerline
+  :ensure nil
+  :defer)
 
-;; Buffer selection and ibuffer settings
-(require 'bs)
-(require 'ibuffer)
-(defalias 'list-buffers 'ibuffer) ;; list of buffers on C-x C-b
-(global-set-key (kbd "<f2>") 'bs-show) ;; buffer selection on F2
+(use-package nimbus-theme
+  :ensure nil
+  :defer)
 
-;; Bookmarks settings
-(require 'bookmark)
-(setq bookmark-save-flag t) ;; auto-save bookmarks in file
-(when (file-exists-p (concat user-emacs-directory "bookmarks"))
-    (bookmark-load bookmark-default-file t))
-(setq bookmark-default-file (concat user-emacs-directory "bookmarks"))
-(global-set-key (kbd "<f5>") 'bookmark-jump) ;; jump on bookmark on F5
-(global-set-key (kbd "<C-f5>") 'bookmark-set) ;; create bookmark
-(global-set-key (kbd "<M-f5>") 'bookmark-bmenu-list) ;; open list of bookmarks
+(use-package leuven-theme
+  :ensure nil
+  :defer)
 
-;; Dired
-(require 'dired)
-(setq dired-recursive-deletes 'top) ;; delete not empty directories
+;; easy switch between themes
+(use-package helm-themes
+  :ensure nil
+  :defer
+  :config
+  ;; need to update powerline after changing theme
+  (advice-add 'helm-themes :after #'powerline-reset))
 
-;; Imenu
-(require 'imenu)
-(setq imenu-auto-rescan t)
-(setq imenu-use-popup-menu nil)
-(global-set-key (kbd "<f8>") 'imenu)
+(defun my-make-frame-function(frame)
+  (if (not (featurep 'powerline))
+      (powerline-center-theme)))
 
-;; Run shell
-(global-set-key (kbd "C-x /") 'shell-command)
+(setq my-dark-theme 'nimbus
+      my-light-theme 'leuven)
 
-;; Word-wrap mode
-(global-set-key (kbd "<f6>") 'toggle-truncate-lines)
+(defun my-light-theme ()
+  "Switch to light theme."
+  (interactive)
+  (mapc #'disable-theme custom-enabled-themes)
+  (when (load-theme my-dark-theme)
+    (powerline-reset)))
 
-;; Comment function
-(defun comment-or-uncomment-this (&optional lines)
-    (interactive "P")
-    (if mark-active
-        (if (< (mark) (point))
-            (comment-or-uncomment-region (mark) (point))
-            (comment-or-uncomment-region (poin) (mark)))
-        (comment-or-uncomment-region
-         (line-beginning-position)
-         (line-end-position lines))
-        (next-line)))
-(global-set-key (kbd "C-;") 'comment-or-uncomment-this)
+(defun my-dark-theme ()
+  "Switch to dark theme."
+  (interactive)
+  (mapc #'disable-theme custom-enabled-themes)
+  (when (load-theme my-dark-theme)
+    (powerline-reset)))
 
-;; C-x C-k killing buffer
-(defun kill-current-buffer ()
-    (interactive)
-    (kill-buffer (current-buffer)))
-(global-set-key (kbd "C-x C-k") 'kill-current-buffer)
+(when window-system
+  (my-make-frame-function (selected-frame))
+  (set-frame-size (selected-frame) 160 50)
+  (set-frame-position (selected-frame) 130 10)
+  (load-theme 'solarized-light t)
+  (set-frame-font (format "Anonymous Pro:pixelsize=%d:antialias:true:autohint=true" 18)))
+
+(add-hook 'after-make-frame-functions
+	  #'my-make-frame-function)
+
+;; my customization of used themes
+;; (eval-after-load 'leuven-theme
+;;   '(custom-theme-set-faces
+;;     'leuven
+;;     '(font-locl-comment-delimeter-face ((t (:foreground "#505050"))))))
+
+;; (eval-after-load 'nimbus-theme
+;;   '(custom-theme-set-faces
+;;     'nimbus
+;;     '(region ((t (:background "#505050"))))))
+
+;;
+;; CONVENIENCE FUNCTIONS, ALIASES, AND KEY BINDINGS
+;;
+
+(defun am ()
+  "Change dictionary to american."
+  (interactive)
+  (setq ispell-local-dictionary "american"))
+
+(defun ru ()
+  "Change dictionary to russian."
+  (interactive)
+  (setq ispell-local-dictionary "russian"))
+
+(defalias 'fi #'set-frame-font-inconsolata)
+(defalias 'fa #'set-frame-font-anonymous-pro)
+(defalias 'st #'magit-status)
+(defalias 'ir #'ispell-region)
+(defalias 'md #'markdown-mode)
+
+;; Disable backup/autosave files
+(setq make-backup-files nil)
+;; (setq auto-save-default nil)
+;; (setq auto-save-list-file-name nil)
+
+;; Show-paren-mode settings
+;; (show-paren-mode t) ;; enable highlight expressions between {},[],()
+;; (setq show-paren-style 'expression) ;; enable color higlight expression between {},[],()
 
 ;; Auto-complete
 (global-set-key (kbd "M-/") 'hippie-expand)
 (global-set-key (kbd "S-SPC") 'dabbrev-expand)
 
-;; Highlight current line
-(global-hl-line-mode t)
+
+;; Bind keys
+(global-set-key (kbd "C-c k") #'compile)
+(global-set-key (kbd "C-c q") #'bury-buffer)
+
+(defun backward-kill-word-or-kill-region (arg)
+  "C-w delete previous word or region"
+  (interactive "p")
+  (if (region-active-p)
+      (kill-region (region-beginning)
+                   (region-end))
+    (backward-kill-word arg)))
+(global-set-key (kbd "C-w") 'backward-kill-word-or-kill-region)
+(define-key minibuffer-local-map (kbd "C-w") 'backward-kill-word-or-kill-region)
+(add-hook 'ido-setup-hook
+          (lambda ()
+            (define-key ido-completion-map (kbd "C-w") 'ido-delete-backward-word-updir)))
+
+(require 'ibuffer)
+(defalias 'list-buffers 'ibuffer) ;; list of buffers on C-x C-b
+
+;; Bookmarks settings
+(require 'bookmark)
+(setq bookmark-save-flag t)                          ;; auto-save bookmarks in file
+(when (file-exists-p (concat user-emacs-directory "bookmarks"))
+  (bookmark-load bookmark-default-file t))
+(setq bookmark-default-file (concat user-emacs-directory "bookmarks"))
+(global-set-key (kbd "<f5>") 'bookmark-jump)         ;; jump on bookmark on F5
+(global-set-key (kbd "<C-f5>") 'bookmark-set)        ;; create bookmark
+(global-set-key (kbd "<M-f5>") 'bookmark-bmenu-list) ;; open list of bookmarks
+
+(defun comment-or-uncomment-this (&optional lines)
+  "Comment current line or selected region"
+  (interactive "P")
+  (if mark-active
+      (if (< (mark) (point))
+          (comment-or-uncomment-region (mark) (point))
+	(comment-or-uncomment-region (poin) (mark)))
+    (comment-or-uncomment-region
+     (line-beginning-position)
+     (line-end-position lines))
+    (next-line)))
+(global-set-key (kbd "C-;") 'comment-or-uncomment-this)
+
+(defun kill-current-buffer ()
+  "C-x C-k current killing buffer"
+  (interactive)
+  (kill-buffer (current-buffer)))
+(global-set-key (kbd "C-x C-k") 'kill-current-buffer)
+
+(defun create-new-line-with-indent ()
+  "Create new line with indent from middle line."
+  (interactive)
+  (end-of-line 1)
+  (newline-and-indent))
+(global-set-key (kbd "<C-return>") 'create-new-line-with-indent)
+
+;; Delete trailing whitespaces, format buffer and untabify when save buffer
+(defun format-current-buffer()
+  (indent-region (point-min) (point-max))
+  nil)
+(defun untabify-current-buffer()
+  (if (not indent-tabs-mode)
+      (untabify (point-min) (point-max)))
+  nil)
+(add-to-list 'write-file-functions 'format-current-buffer)
+(add-to-list 'write-file-functions 'untabify-current-buffer)
+(add-to-list 'write-file-functions 'delete-trailing-whitespace)
+
+
+(use-package shell-pop
+  :ensure nil
+  :init
+  (setq shell-pop-full-span t)
+  :bind
+  (("C-c s" . shell-pop)))
+
+(use-package helm-mt
+  :ensure nil
+  :bind
+  (("C-c S" . helm-mt)))
+
+(use-package magit
+  :ensure nil
+  :bind
+  (("C-c m" . magit-status)))
+
 
 ;;
-(defun create-new-line-with-indent ()
-    "Create new line with indent from middle line."
-    (interactive)
-    (end-of-line 1)
-    (newline-and-indent))
-(global-set-key (kbd "<C-return>") 'create-new-line-with-indent)
 ;;
-;;
-;;
+(require 'init-cl)
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(ansi-color-names-vector
-   ["#073642" "#dc322f" "#859900" "#b58900" "#268bd2" "#d33682" "#2aa198" "#657b83"])
- '(compilation-message-face (quote default))
- '(cua-global-mark-cursor-color "#2aa198")
- '(cua-normal-cursor-color "#839496")
- '(cua-overwrite-cursor-color "#b58900")
- '(cua-read-only-cursor-color "#859900")
- '(custom-enabled-themes (quote (solarized-light)))
- '(custom-safe-themes
+ '(package-selected-packages
    (quote
-    ("d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" "8aebf25556399b58091e533e455dd50a6a9cba958cc4ebb0aab175863c25b9a4" default)))
- '(fci-rule-color "#073642")
- '(highlight-changes-colors (quote ("#d33682" "#6c71c4")))
- '(highlight-symbol-colors
-   (--map
-    (solarized-color-blend it "#002b36" 0.25)
-    (quote
-     ("#b58900" "#2aa198" "#dc322f" "#6c71c4" "#859900" "#cb4b16" "#268bd2"))))
- '(highlight-symbol-foreground-color "#93a1a1")
- '(highlight-tail-colors
-   (quote
-    (("#073642" . 0)
-     ("#546E00" . 20)
-     ("#00736F" . 30)
-     ("#00629D" . 50)
-     ("#7B6000" . 60)
-     ("#8B2C02" . 70)
-     ("#93115C" . 85)
-     ("#073642" . 100))))
- '(hl-bg-colors
-   (quote
-    ("#7B6000" "#8B2C02" "#990A1B" "#93115C" "#3F4D91" "#00629D" "#00736F" "#546E00")))
- '(hl-fg-colors
-   (quote
-    ("#002b36" "#002b36" "#002b36" "#002b36" "#002b36" "#002b36" "#002b36" "#002b36")))
- '(magit-diff-use-overlays nil)
- '(nrepl-message-colors
-   (quote
-    ("#dc322f" "#cb4b16" "#b58900" "#546E00" "#B4C342" "#00629D" "#2aa198" "#d33682" "#6c71c4")))
- '(pos-tip-background-color "#073642")
- '(pos-tip-foreground-color "#93a1a1")
- '(smartrep-mode-line-active-bg (solarized-color-blend "#859900" "#073642" 0.2))
- '(term-default-bg-color "#002b36")
- '(term-default-fg-color "#839496")
- '(vc-annotate-background nil)
- '(vc-annotate-background-mode nil)
- '(vc-annotate-color-map
-   (quote
-    ((20 . "#dc322f")
-     (40 . "#c85d17")
-     (60 . "#be730b")
-     (80 . "#b58900")
-     (100 . "#a58e00")
-     (120 . "#9d9100")
-     (140 . "#959300")
-     (160 . "#8d9600")
-     (180 . "#859900")
-     (200 . "#669b32")
-     (220 . "#579d4c")
-     (240 . "#489e65")
-     (260 . "#399f7e")
-     (280 . "#2aa198")
-     (300 . "#2898af")
-     (320 . "#2793ba")
-     (340 . "#268fc6")
-     (360 . "#268bd2"))))
- '(vc-annotate-very-old-color nil)
- '(weechat-color-list
-   (quote
-    (unspecified "#002b36" "#073642" "#990A1B" "#dc322f" "#546E00" "#859900" "#7B6000" "#b58900" "#00629D" "#268bd2" "#93115C" "#d33682" "#00736F" "#2aa198" "#839496" "#657b83")))
- '(xterm-color-names
-   ["#073642" "#dc322f" "#859900" "#b58900" "#268bd2" "#d33682" "#2aa198" "#eee8d5"])
- '(xterm-color-names-bright
-   ["#002b36" "#cb4b16" "#586e75" "#657b83" "#839496" "#6c71c4" "#93a1a1" "#fdf6e3"]))
+    (highlight-sexp slime paren-face paredit magit helm-mt shell-pop helm-themes leuven-theme nimbus-theme powerline which-key use-package treemacs solarized-theme smartparens multiple-cursors helm-swoop helm-spaces helm-ls-git helm-git-grep helm-descbinds helm-c-yasnippet))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
-
-;;
-(add-to-list 'load-path "~/.emacs.d/elisp/")
-;; (require 'init-haskell)
