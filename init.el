@@ -218,11 +218,7 @@ Argument FRAMES has the same meaning as for `set-frame-font'"
   :ensure nil
   :defer)
 
-(use-package nimbus-theme
-  :ensure nil
-  :defer)
-
-(use-package leuven-theme
+(use-package solarized-theme
   :ensure nil
   :defer)
 
@@ -238,21 +234,21 @@ Argument FRAMES has the same meaning as for `set-frame-font'"
   (if (not (featurep 'powerline))
       (powerline-center-theme)))
 
-(setq my-dark-theme 'nimbus
-      my-light-theme 'leuven)
+(setq my-dark-theme 'solarized-dark
+      my-light-theme 'solarized-light)
 
 (defun my-light-theme ()
   "Switch to light theme."
   (interactive)
   (mapc #'disable-theme custom-enabled-themes)
-  (when (load-theme my-dark-theme)
+  (when (load-theme my-light-theme t)
     (powerline-reset)))
 
 (defun my-dark-theme ()
   "Switch to dark theme."
   (interactive)
   (mapc #'disable-theme custom-enabled-themes)
-  (when (load-theme my-dark-theme)
+  (when (load-theme my-dark-theme t)
     (powerline-reset)))
 
 (when window-system
@@ -264,17 +260,6 @@ Argument FRAMES has the same meaning as for `set-frame-font'"
 
 (add-hook 'after-make-frame-functions
 	  #'my-make-frame-function)
-
-;; my customization of used themes
-;; (eval-after-load 'leuven-theme
-;;   '(custom-theme-set-faces
-;;     'leuven
-;;     '(font-locl-comment-delimeter-face ((t (:foreground "#505050"))))))
-
-;; (eval-after-load 'nimbus-theme
-;;   '(custom-theme-set-faces
-;;     'nimbus
-;;     '(region ((t (:background "#505050"))))))
 
 ;;
 ;; CONVENIENCE FUNCTIONS, ALIASES, AND KEY BINDINGS
@@ -308,7 +293,6 @@ Argument FRAMES has the same meaning as for `set-frame-font'"
 ;; Auto-complete
 (global-set-key (kbd "M-/") 'hippie-expand)
 (global-set-key (kbd "S-SPC") 'dabbrev-expand)
-
 
 ;; Bind keys
 (global-set-key (kbd "C-c k") #'compile)
@@ -395,7 +379,6 @@ Argument FRAMES has the same meaning as for `set-frame-font'"
   :ensure nil
   :bind
   (("C-c m" . magit-status)))
-
 
 ;;
 ;;

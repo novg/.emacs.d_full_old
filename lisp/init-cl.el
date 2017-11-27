@@ -8,11 +8,15 @@
 
 (use-package slime
   :ensure nil
-  :defer)
+  :init
+  (load (expand-file-name "~/.roswell/helper.el"))
+  (setq inferior-lisp-program "ros -Q run"
+	slime-contribs '(slime-fancy))
 
-(setq slime-lisp-implementations '((sbcl ("sbcl")))
-      slime-default-lisp 'sbcl
-      slime-contribs '(slime-fancy))
+  (setf slime-lisp-implementations
+	`((sbcl    ("sbcl" "--dynamic-space-size" "2000"))
+	  (roswell ("ros" "-Q" "run"))))
+  (setf slime-default-lisp 'roswell))
 
 (let ((path (expand-file-name "/home/novg/Documents/doc/HyperSpec/")))
   (if (file-accessible-directory-p path)
@@ -44,33 +48,6 @@
 (add-hook 'emacs-lisp-mode-hook #'my-emacs-lisp-mode-hook-fn)
 (add-hook 'lisp-mode-hook #'my-lisp-mode-hook-fn)
 
-(defun slime-qlot-exec (directory)
-  "from https://github.com/fukamachi/qlot/blob/master/README.markdown"
-  (interactive (list (read-directory-name "Project directory: ")))
-  (slime-start :program "/home/novg/.roswell/bin/qlot"
-               :program-args '("exec" "ros" "-S" "." "run")
-               :directory directory
-               :name 'qlot
-               :env (list (concat "PATH="
-                                  (mapconcat #'identity exec-path ":"))
-                          (concat "QUICKLISP_HOME="
-                                  (file-name-as-directory directory) "quicklisp/"))))
-;;
-;; OLD SETTINGS
-;;
-;;
-;; Load quicklisp slime-helper
-;; (load (expand-file-name "~/quicklisp/slime-helper.el"))
-;; Set up SBCL
-;; (setq inferior-lisp-program "sbcl")
-;;
-;;
-;; (let ((path (expand-file-name "/home/novg/Documents/doc/HyperSpec/")))
-;; (if (file-accessible-directory-p path)
-;; (setq common-lisp-hyperspec-root (concat "file://" path))
-;; (warn "No HyperSpec directory found")))
-;;
-;;
 ;;
 
 (provide 'init-cl)
