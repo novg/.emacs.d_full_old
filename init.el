@@ -362,6 +362,27 @@ Argument FRAMES has the same meaning as for `set-frame-font'"
 (add-to-list 'write-file-functions 'untabify-current-buffer)
 (add-to-list 'write-file-functions 'delete-trailing-whitespace)
 
+(defun move-line-down ()
+  "Move current line down."
+  (interactive)
+  (let ((col (current-column)))
+    (save-excursion
+      (forward-line)
+      (transpose-lines 1))
+    (forward-line)
+    (move-to-column col)))
+(global-set-key (kbd "<C-S-down>") 'move-line-down)
+
+(defun move-line-up ()
+  "Move current line up."
+  (interactive)
+  (let ((col (current-column)))
+    (save-excursion
+      (forward-line)
+      (transpose-lines -1))
+    (previous-line 2)
+    (move-to-column col)))
+(global-set-key (kbd "<C-S-up>") 'move-line-up)
 
 (use-package shell-pop
   :ensure nil
