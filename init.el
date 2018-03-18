@@ -6,8 +6,6 @@
   (if (file-accessible-directory-p path)
       (add-to-list 'load-path path)))
 
-;; (require 'init-cl)
-
 ;; M-x eval-buffer
 ;; M-x package-refresh-contents
 ;; M-x package-install RET package-name RET
@@ -51,7 +49,7 @@
 (use-package helm-swoop
   :ensure nil
   :bind
-  (("C-s" . helm-swoop)))
+  (("C-S-s" . helm-swoop)))
 
 (use-package helm-descbinds
   :ensure nil
@@ -85,10 +83,10 @@
   :ensure nil
   :demand
   :bind
-  (("C-s-n" . windmove-down)
-   ("C-s-p" . windmove-up)
-   ("C-s-b" . windmove-left)
-   ("C-s-f" . windmove-right))
+  (("C-S-n" . windmove-down)
+   ("C-S-p" . windmove-up)
+   ("C-S-b" . windmove-left)
+   ("C-S-f" . windmove-right))
   :config
   (windmove-default-keybindings))
 
@@ -120,6 +118,10 @@
 ;;
 ;; EDITING ENHANCEMENTS
 ;;
+
+(use-package better-defaults
+  :ensure nil
+  :defer)
 
 ;; Context aware insertion of pairs parenthesis
 (use-package smartparens
@@ -171,6 +173,9 @@
 (setq redisplay-dont-pause t)     ;; advanced displaing of buffer
 (setq ring-bell-function 'ignore) ;; disable bell
 
+;; (setq require-final-newline t)
+;; (setq-default require-final-newline t)
+
 ;; Display the name of the current buffer in the title bar
 (setq frame-title-format "GNU Emacs: %b")
 
@@ -192,7 +197,7 @@
 (setq scroll-conservatively 10000)
 
 ;; Show-paren-mode settings
-;;(show-paren-mode t) ;; enable highlight expressions between {},[],()
+;; (show-paren-mode t) ;; enable highlight expressions between {},[],()
 ;;(setq show-paren-style 'expression) ;; enable color higlight expression between {},[],()
 
 ;; Show messages
@@ -202,11 +207,11 @@
 (global-hl-line-mode t)
 
 
-(defun set-frame-font-inconsolata (size &optional frames)
-  "Set font to Inconsolata:pixelsize=SIZE:antialias=true:autohint=false.
+(defun set-frame-font-hack (size &optional frames)
+  "Set font to Hack:pixelsize=SIZE:antialias=true:autohint=false.
 Argument FRAMES has the same meaning as for `set-frame-font'"
-  (interactive "n[Inconsolata] size: ")
-  (set-frame-font (format "Inconsolata:pixelsize=%d:antialias=true:autohint=true" size) nil frames))
+  (interactive "n[Hack] size: ")
+  (set-frame-font (format "Hack:pixelsize=%d:antialias=true:autohint=true" size) nil frames))
 
 (defun set-frame-font-anonymous-pro (size &optional frames)
   "Set font to Anonymous Pro:pixelsize=SIZE:antialias=true:autohint=false.
@@ -256,7 +261,7 @@ Argument FRAMES has the same meaning as for `set-frame-font'"
   (set-frame-size (selected-frame) 160 50)
   (set-frame-position (selected-frame) 130 10)
   (load-theme 'solarized-light t)
-  (set-frame-font (format "Anonymous Pro:pixelsize=%d:antialias:true:autohint=true" 18)))
+  (set-frame-font (format "Hack:pixelsize=%d:antialias:true:autohint=true" 16)))
 
 (add-hook 'after-make-frame-functions
 	  #'my-make-frame-function)
@@ -275,8 +280,8 @@ Argument FRAMES has the same meaning as for `set-frame-font'"
   (interactive)
   (setq ispell-local-dictionary "russian"))
 
-(defalias 'fi #'set-frame-font-inconsolata)
-(defalias 'fa #'set-frame-font-anonymous-pro)
+;; (defalias 'fi #'set-frame-font-inconsolata)
+;; (defalias 'fa #'set-frame-font-anonymous-pro)
 (defalias 'st #'magit-status)
 (defalias 'ir #'ispell-region)
 (defalias 'md #'markdown-mode)
@@ -284,11 +289,10 @@ Argument FRAMES has the same meaning as for `set-frame-font'"
 ;; Disable backup/autosave files
 (setq make-backup-files nil)
 ;; (setq auto-save-default nil)
-;; (setq auto-save-list-file-name nil)
+(setq auto-save-list-file-name nil)
 
-;; Show-paren-mode settings
-;; (show-paren-mode t) ;; enable highlight expressions between {},[],()
-;; (setq show-paren-style 'expression) ;; enable color higlight expression between {},[],()
+;; auto close bracket insertion. New in emacs 24
+(electric-pair-mode 1)
 
 ;; Auto-complete
 (global-set-key (kbd "M-/") 'hippie-expand)
@@ -303,13 +307,13 @@ Argument FRAMES has the same meaning as for `set-frame-font'"
   (interactive "p")
   (if (region-active-p)
       (kill-region (region-beginning)
-                   (region-end))
+		   (region-end))
     (backward-kill-word arg)))
 (global-set-key (kbd "C-w") 'backward-kill-word-or-kill-region)
 (define-key minibuffer-local-map (kbd "C-w") 'backward-kill-word-or-kill-region)
 (add-hook 'ido-setup-hook
-          (lambda ()
-            (define-key ido-completion-map (kbd "C-w") 'ido-delete-backward-word-updir)))
+	  (lambda ()
+	    (define-key ido-completion-map (kbd "C-w") 'ido-delete-backward-word-updir)))
 
 (require 'ibuffer)
 (defalias 'list-buffers 'ibuffer) ;; list of buffers on C-x C-b
@@ -329,7 +333,7 @@ Argument FRAMES has the same meaning as for `set-frame-font'"
   (interactive "P")
   (if mark-active
       (if (< (mark) (point))
-          (comment-or-uncomment-region (mark) (point))
+	  (comment-or-uncomment-region (mark) (point))
 	(comment-or-uncomment-region (poin) (mark)))
     (comment-or-uncomment-region
      (line-beginning-position)
@@ -371,7 +375,7 @@ Argument FRAMES has the same meaning as for `set-frame-font'"
       (transpose-lines 1))
     (forward-line)
     (move-to-column col)))
-(global-set-key (kbd "<C-S-down>") 'move-line-down)
+(global-set-key (kbd "<M-down>") 'move-line-down)
 
 (defun move-line-up ()
   "Move current line up."
@@ -382,7 +386,7 @@ Argument FRAMES has the same meaning as for `set-frame-font'"
       (transpose-lines -1))
     (previous-line 2)
     (move-to-column col)))
-(global-set-key (kbd "<C-S-up>") 'move-line-up)
+(global-set-key (kbd "<M-up>") 'move-line-up)
 
 (use-package shell-pop
   :ensure nil
@@ -403,6 +407,7 @@ Argument FRAMES has the same meaning as for `set-frame-font'"
 
 ;;
 ;;
+(require 'init-python)
 (require 'init-cl)
 
 (custom-set-variables
@@ -410,9 +415,12 @@ Argument FRAMES has the same meaning as for `set-frame-font'"
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   (quote
+    ("732b807b0543855541743429c9979ebfb363e27ec91e82f463c91e68c772f6e3" "a24c5b3c12d147da6cef80938dca1223b7c7f70f2f382b26308eba014dc4833a" default)))
  '(package-selected-packages
    (quote
-    (highlight-sexp slime paren-face paredit magit helm-mt shell-pop helm-themes leuven-theme nimbus-theme powerline which-key use-package treemacs solarized-theme smartparens multiple-cursors helm-swoop helm-spaces helm-ls-git helm-git-grep helm-descbinds helm-c-yasnippet))))
+    (material-theme highlight-sexp slime paren-face paredit magit helm-mt shell-pop helm-themes leuven-theme nimbus-theme powerline which-key use-package treemacs solarized-theme smartparens multiple-cursors helm-swoop helm-spaces helm-ls-git helm-git-grep helm-descbinds helm-c-yasnippet))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
