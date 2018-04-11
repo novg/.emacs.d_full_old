@@ -3,7 +3,7 @@
   :config
   (elpy-enable)
   (setq elpy-rpc-python-command "python3")
-  (setq python-shell-interpreter "ipython"
+  (setq python-shell-interpreter "ipython3"
 	python-shell-interpreter-args "-i --simple-prompt"))
 
 (use-package flycheck

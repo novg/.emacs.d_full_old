@@ -30,7 +30,7 @@
 
 ;; Use more efficient buffer/file selection
 (use-package helm
-  :ensure nil
+  :ensure t
   :init
   (setq help-split-window-default-side 'other)
   (helm-mode 1)
@@ -47,34 +47,34 @@
    ("C-c i" . helm-imenu)))
 
 (use-package helm-swoop
-  :ensure nil
+  :ensure t
   :bind
   (("C-S-s" . helm-swoop)))
 
 (use-package helm-descbinds
-  :ensure nil
+  :ensure t
   :init
   (helm-descbinds-mode))
 
 (use-package helm-git-grep
-  :ensure nil
+  :ensure t
   :bind
   (("C-c j" . helm-git-grep)
    ("C-c J" . helm-git-grep-at-painf)))
 
 (use-package helm-ls-git
-  :ensure nil
+  :ensure t
   :bind
   (("C-c g" . helm-ls-git-ls)))
 
 (use-package helm-c-yasnippet
-  :ensure nil
+  :ensure t
   :bind
   (("C-c y" . helm-yas-complete)))
 
 ;; Use more efficient changing windows
 (use-package ace-window
-  :ensure nil
+  :ensure t
   :bind
   (("C-x o" . ace-window)))
 
@@ -91,27 +91,27 @@
   (windmove-default-keybindings))
 
 ;; A like tabs
-(use-package helm-spaces
-  :ensure nil
-  :bind
-  (("C-c b" . helm-spaces)))
+					;(use-package helm-spaces
+					;  :ensure nil
+					;  :bind
+					;  (("C-c b" . helm-spaces)))
 
 ;; Allow for undo/redo of window manipulations (sush as C-x 1)
 (winner-mode 1) ;; C-c left/C-c right
 
 ;; Remind of keys than can follow a key sequence
 (use-package which-key
-  :ensure nil
+  :ensure t
   :config
   (which-key-mode 1))
 
-(use-package avy
-  :ensure nil
-  :bind
-  (("C-:" . avy-goto-char-timer)))
+					;(use-package avy
+					;  :ensure nil
+					;  :bind
+					;  (("C-:" . avy-goto-char-timer)))
 
 (use-package treemacs
-  :ensure nil
+  :ensure t
   :bind
   (("C-c t" . treemacs-toggle)))
 
@@ -120,12 +120,12 @@
 ;;
 
 (use-package better-defaults
-  :ensure nil
+  :ensure t
   :defer)
 
 ;; Context aware insertion of pairs parenthesis
 (use-package smartparens
-  :ensure nil
+  :ensure t
   :diminish smartparens-mode
   :commands
   smartparens-strict-mode
@@ -173,8 +173,8 @@
 (setq redisplay-dont-pause t)     ;; advanced displaing of buffer
 (setq ring-bell-function 'ignore) ;; disable bell
 
-;; (setq require-final-newline t)
-;; (setq-default require-final-newline t)
+(setq require-final-newline t)
+(setq-default require-final-newline t)
 
 ;; Display the name of the current buffer in the title bar
 (setq frame-title-format "GNU Emacs: %b")
@@ -220,16 +220,20 @@ Argument FRAMES has the same meaning as for `set-frame-font'"
   (set-frame-font (format "Anonymous Pro:pixelsize=%d:antialias:true:autohint=true" size) nil frames))
 
 (use-package powerline
-  :ensure nil
+  :ensure t
   :defer)
 
 (use-package solarized-theme
-  :ensure nil
+  :ensure t
+  :defer)
+
+(use-package material-theme
+  :ensure t
   :defer)
 
 ;; easy switch between themes
 (use-package helm-themes
-  :ensure nil
+  :ensure t
   :defer
   :config
   ;; need to update powerline after changing theme
@@ -288,7 +292,7 @@ Argument FRAMES has the same meaning as for `set-frame-font'"
 
 ;; Disable backup/autosave files
 (setq make-backup-files nil)
-;; (setq auto-save-default nil)
+(setq auto-save-default nil)
 (setq auto-save-list-file-name nil)
 
 ;; auto close bracket insertion. New in emacs 24
@@ -394,11 +398,6 @@ Argument FRAMES has the same meaning as for `set-frame-font'"
   (setq shell-pop-full-span t)
   :bind
   (("C-c s" . shell-pop)))
-
-(use-package helm-mt
-  :ensure nil
-  :bind
-  (("C-c S" . helm-mt)))
 
 (use-package magit
   :ensure nil
